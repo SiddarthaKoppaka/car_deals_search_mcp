@@ -115,7 +115,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 personalUse: args.personalUse,
             };
             const maxResults = args.maxResults || 10;
-            const sources = args.sources || ['cars.com', 'autotrader', 'kbb'];
+            // Default to just cars.com for reliability
+            const sources = args.sources || ['cars.com'];
+
+            console.error(`[MCP] Searching for ${params.make} ${params.model} in ${params.zip}`);
+            console.error(`[MCP] Sources: ${sources.join(', ')}, Max: ${maxResults}`);
 
             let allListings = [];
             let errors = [];
@@ -124,30 +128,52 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             const scraperPromises = [];
 
             if (sources.includes('cars.com')) {
+                console.error('[MCP] Starting Cars.com scraper...');
                 scraperPromises.push(
                     scrapeCarscom(params, maxResults)
-                        .then(listings => ({ source: 'Cars.com', listings }))
-                        .catch(err => ({ source: 'Cars.com', error: err.message, listings: [] }))
+                        .then(listings => {
+                            console.error(`[MCP] Cars.com returned ${listings.length} listings`);
+                            return { source: 'Cars.com', listings };
+                        })
+                        .catch(err => {
+                            console.error(`[MCP] Cars.com error: ${err.message}`);
+                            return { source: 'Cars.com', error: err.message, listings: [] };
+                        })
                 );
             }
 
             if (sources.includes('autotrader')) {
+                console.error('[MCP] Starting Autotrader scraper...');
                 scraperPromises.push(
                     scrapeAutotrader(params, maxResults)
-                        .then(listings => ({ source: 'Autotrader', listings }))
-                        .catch(err => ({ source: 'Autotrader', error: err.message, listings: [] }))
+                        .then(listings => {
+                            console.error(`[MCP] Autotrader returned ${listings.length} listings`);
+                            return { source: 'Autotrader', listings };
+                        })
+                        .catch(err => {
+                            console.error(`[MCP] Autotrader error: ${err.message}`);
+                            return { source: 'Autotrader', error: err.message, listings: [] };
+                        })
                 );
             }
 
             if (sources.includes('kbb')) {
+                console.error('[MCP] Starting KBB scraper...');
                 scraperPromises.push(
                     scrapeKBB(params, maxResults)
-                        .then(listings => ({ source: 'KBB', listings }))
-                        .catch(err => ({ source: 'KBB', error: err.message, listings: [] }))
+                        .then(listings => {
+                            console.error(`[MCP] KBB returned ${listings.length} listings`);
+                            return { source: 'KBB', listings };
+                        })
+                        .catch(err => {
+                            console.error(`[MCP] KBB error: ${err.message}`);
+                            return { source: 'KBB', error: err.message, listings: [] };
+                        })
                 );
             }
 
             const results = await Promise.all(scraperPromises);
+            console.error(`[MCP] All scrapers completed`);
 
             for (const result of results) {
                 allListings.push(...result.listings);
@@ -155,6 +181,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     errors.push(`${result.source}: ${result.error}`);
                 }
             }
+
+            console.error(`[MCP] Total listings: ${allListings.length}`);
 
             // Format output
             let output = `# Car Deals Search Results\n\n`;
