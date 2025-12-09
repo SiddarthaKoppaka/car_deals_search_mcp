@@ -1,0 +1,45 @@
+{
+  "mcpVersion": "1.0.0",
+  "id": "SiddarthaKoppaka/car_deals_search_mcp",
+  "name": "car-deals-search-mcp",
+  "displayName": "Car Deals (MCP)",
+  "version": "1.0.0",
+  "description": "Search used car listings from Cars.com, Autotrader and KBB. MCP-compatible server.",
+  "author": "SiddarthaKoppaka",
+  "homepage": "https://github.com/SiddarthaKoppaka/car_deals_search_mcp",
+  "icon": "assets/icon.svg",
+  "license": "MIT",
+  "entry": {
+    "command": "node",
+    "args": ["src/server.js"]
+  },
+  "ports": [
+    {
+      "name": "http",
+      "protocol": "http",
+      "port": 3000
+    }
+  ],
+  "permissions": [
+    "network",
+    "filesystem"
+  ],
+  "tags": ["scraper","cars","mcp","search"],
+  "schema": {
+    "tool": "search_car_deals",
+    "parameters": {
+      "make": { "type": "string", "required": true },
+      "model": { "type": "string", "required": true },
+      "zip": { "type": "string" },
+      "yearMin": { "type": "integer" },
+      "yearMax": { "type": "integer" },
+      "priceMax": { "type": "integer" },
+      "mileageMax": { "type": "integer" },
+      "maxResults": { "type": "integer" },
+      "sources": { "type": "array", "items": { "type": "string" } },
+      "oneOwner": { "type": "boolean" },
+      "noAccidents": { "type": "boolean" },
+      "personalUse": { "type": "boolean" }
+    }
+  }
+}
